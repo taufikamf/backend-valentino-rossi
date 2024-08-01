@@ -77,7 +77,6 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-// List Products
 exports.listProducts = async (req, res) => {
   try {
     const products = await db.Product.findAll({ where: { merchantId: req.user.id } });
@@ -95,7 +94,58 @@ exports.listProducts = async (req, res) => {
   }
 };
 
-// List Orders for Merchant
+exports.updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, price, description, stock } = req.body;
+
+    const product = await db.Product.findOne({ where: { id, merchantId: req.user.id } });
+    if (!product) return res.status(404).json({
+      status: 'error',
+      message: 'Product not found'
+    });
+
+    await product.update({ name, price, description, stock });
+
+    res.json({
+      status: 'success',
+      data: product,
+      message: 'Product updated successfully'
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 'error',
+      error: err.message,
+      message: 'Error updating product'
+    });
+  }
+};
+
+exports.deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const product = await db.Product.findOne({ where: { id, merchantId: req.user.id } });
+    if (!product) return res.status(404).json({
+      status: 'error',
+      message: 'Product not found'
+    });
+
+    await product.destroy();
+
+    res.json({
+      status: 'success',
+      message: 'Product deleted successfully'
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 'error',
+      error: err.message,
+      message: 'Error deleting product'
+    });
+  }
+};
+
 exports.listOrders = async (req, res) => {
   try {
     const orders = await db.Order.findAll({
